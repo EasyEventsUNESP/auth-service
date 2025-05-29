@@ -23,11 +23,12 @@ public class Evento {
     private String nome;
     private String descricao;
     private String local;
-    private LocalDateTime hora_inicio;
-    private LocalDateTime hora_fim;
+    private LocalDateTime horaInicio;
+    private LocalDateTime horaFim;
     private LocalDateTime updatedAt;
     private Orcamento orcamento;
-    private List<Convidado> convidados;
-    private List<Notificacao> notificacoes;
+    private List<String> funcionariosId;
+    private List<String> convidadosId;
+    private List<String> notificacoesId;
 
 }

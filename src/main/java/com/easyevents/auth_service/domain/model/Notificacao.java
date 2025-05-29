@@ -24,8 +24,8 @@ public class Notificacao {
     private Intensidade intensidade;
     private TipoNotificacao tipoNotificacao;
     private LocalDateTime dataHora;
-    private Usuario remetente;
+    private String remetente;
     private String mensagem;
-    private List<Pessoa> destinatarios;
+    private List<String> destinatariosId;
 
 }

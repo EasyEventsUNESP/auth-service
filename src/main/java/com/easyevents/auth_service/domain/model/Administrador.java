@@ -18,6 +18,6 @@ import java.util.Map;
 public class Administrador {
 
     @Id
-    private Usuario administradorId;
+    private String administradorId;
 
 }

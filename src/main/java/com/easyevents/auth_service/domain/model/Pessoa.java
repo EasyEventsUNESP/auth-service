@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Document(collection = "pessoa")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter

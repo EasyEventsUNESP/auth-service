@@ -17,10 +17,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class Orcamento {
 
-    @Id
-    private String id;
     private String nome;
     private String descricao;
-    private List<Despesa> despesas;
+    private List<String> despesasId;
 
 }

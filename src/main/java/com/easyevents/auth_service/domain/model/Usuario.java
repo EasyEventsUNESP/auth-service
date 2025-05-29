@@ -18,10 +18,10 @@ import java.util.Map;
 public class Usuario extends Pessoa {
 
     private String senha;
+    private Boolean admin;
     private LocalDateTime criacao;
     private LocalDateTime update;
     private LocalDateTime updatedAt;
-    private Boolean admin;
-    private Map<Evento, Cargo> evento_cargo;
+    private Map<Evento, Cargo> eventoCargo;
 
 }
