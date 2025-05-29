@@ -21,8 +21,8 @@ public class Notificacao {
     @Id
     private String id;
     private String assunto;
-    private String intensidade;
-    private String tipoNotificacao;
+    private Intensidade intensidade;
+    private TipoNotificacao tipoNotificacao;
     private LocalDateTime dataHora;
     private Usuario remetente;
     private String mensagem;

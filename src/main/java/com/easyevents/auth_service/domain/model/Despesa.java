@@ -22,6 +22,6 @@ public class Despesa {
     private String titulo;
     private String descricao;
     private Integer valor;
-    private String tipoDespesa;
+    private TipoDespesa tipoDespesa;
 
 }

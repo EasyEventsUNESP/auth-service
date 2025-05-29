@@ -17,6 +17,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class Convidado extends Pessoa {
 
-    private String statusConfirmacao;
+    private StatusConfirmacao conviteStatus;
 
 }
