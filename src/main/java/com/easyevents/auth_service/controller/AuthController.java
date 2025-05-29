@@ -1,22 +1,40 @@
 package com.easyevents.auth_service.controller;
 
+import com.easyevents.auth_service.domain.dto.request.UsuarioRequest;
+import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
+import com.easyevents.auth_service.domain.model.Usuario;
+import com.easyevents.auth_service.repository.UsuarioRepository;
 import com.easyevents.auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-//    private final AuthService authService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    private final AuthService authService;
 
     @GetMapping
     public String endpointTest() {
 
         return "ERALDO VS MARIO!";
     }
+
+    @GetMapping("/listar")
+    public List<Usuario> listar() {
+
+        return usuarioRepository.findAll();
+    }
+
+    @PostMapping("/criar")
+    public UsuarioResponse criar(@RequestBody UsuarioRequest usuarioRequest) {
+        return authService.createUser(usuarioRequest);
+    }
+
 }
