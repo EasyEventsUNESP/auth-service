@@ -1,6 +1,7 @@
 package com.easyevents.auth_service.controller;
 
-import com.easyevents.auth_service.domain.dto.request.UsuarioRequest;
+import com.easyevents.auth_service.domain.dto.request.AtualizarUsuarioRequest;
+import com.easyevents.auth_service.domain.dto.request.CriarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
 import com.easyevents.auth_service.domain.model.Usuario;
 import com.easyevents.auth_service.repository.UsuarioRepository;
@@ -29,12 +30,27 @@ public class AuthController {
     @GetMapping("/listar")
     public List<Usuario> listar() {
 
-        return usuarioRepository.findAll();
+        return authService.listar();
+    }
+
+    @GetMapping("/buscar/{email}")
+    public Usuario buscarPorEmail(@PathVariable String email) {
+        return authService.buscarPorEmail(email);
     }
 
     @PostMapping("/criar")
-    public UsuarioResponse criar(@RequestBody UsuarioRequest usuarioRequest) {
-        return authService.createUser(usuarioRequest);
+    public UsuarioResponse criar(@RequestBody CriarUsuarioRequest criarUsuarioRequest) {
+        return authService.createUser(criarUsuarioRequest);
+    }
+
+    @PutMapping("/atualizar")
+    public UsuarioResponse atualizar(@RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) {
+        return authService.updateUsuario(atualizarUsuarioRequest);
+    }
+
+    @DeleteMapping("/deletar/{email}")
+    public UsuarioResponse deletar(@PathVariable String email) {
+        return authService.deleteUsuario(email);
     }
 
 }
