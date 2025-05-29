@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@Document(collection = "orcamento")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter
