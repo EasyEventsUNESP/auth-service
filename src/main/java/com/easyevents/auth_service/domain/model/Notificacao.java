@@ -6,22 +6,26 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
-@Document(collection = "usuario")
+@Document(collection = "notificacao")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario extends Pessoa {
+public class Notificacao {
 
-    private String senha;
-    private LocalDateTime criacao;
-    private LocalDateTime update;
-    private LocalDateTime updatedAt;
-    private Boolean admin;
-    private Map<Evento, Cargo> evento_cargo;
+    @Id
+    private String id;
+    private String assunto;
+    private Intensidade intensidade;
+    private TipoNotificacao tipoNotificacao;
+    private LocalDateTime dataHora;
+    private Usuario remetente;
+    private String mensagem;
+    private List<Pessoa> destinatarios;
 
 }

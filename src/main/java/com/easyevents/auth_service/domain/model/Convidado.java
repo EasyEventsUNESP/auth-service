@@ -8,20 +8,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Document(collection = "usuario")
+@Document(collection = "convidado")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario extends Pessoa {
+public class Convidado extends Pessoa {
 
-    private String senha;
-    private LocalDateTime criacao;
-    private LocalDateTime update;
-    private LocalDateTime updatedAt;
-    private Boolean admin;
-    private Map<Evento, Cargo> evento_cargo;
+    private StatusConfirmacao conviteStatus;
 
 }
