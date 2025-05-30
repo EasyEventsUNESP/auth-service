@@ -2,7 +2,6 @@ package com.easyevents.auth_service.controller;
 
 import com.easyevents.auth_service.domain.dto.request.AtualizarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.request.CriarUsuarioRequest;
-import com.easyevents.auth_service.domain.dto.request.LoginRequest;
 import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
 import com.easyevents.auth_service.domain.model.UsuarioModel;
 import com.easyevents.auth_service.repository.UsuarioRepository;
@@ -23,7 +22,7 @@ public class AuthController {
     private final UsuarioRepository usuarioRepository;
     private final AuthService authService;
 
-    @GetMapping
+    @GetMapping("/")
     public String endpointTest() {
 
         return "ERALDO VS MARIO!";
@@ -55,9 +54,10 @@ public class AuthController {
         return authService.deleteUsuario(email);
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest loginRequest) {
-        return authService.login(loginRequest);
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest loginRequest) {
+//        return authService.login(loginRequest);
+//    }
+
 
 }
