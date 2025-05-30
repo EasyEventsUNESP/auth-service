@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -12,11 +13,12 @@ import org.springframework.data.annotation.Id;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Pessoa {
+public class PessoaModel {
 
     @Id
     private String id;
     private String nome;
+    @Indexed(unique = true)
     private String email;
 
 }
