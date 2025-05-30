@@ -28,14 +28,17 @@ public class AuthService {
 
     public UsuarioResponse createUser(CriarUsuarioRequest criarUsuarioRequest){
 
-        usuarioRepository.insert(
-                Usuario.builder()
+        // Verifica se o usuário já existe
+        if (usuarioRepository.findByEmail(criarUsuarioRequest.getEmail()).isPresent()) {
+            throw new RuntimeException("Usuário já cadastrado");
+        }
+
+        usuarioRepository.insert(Usuario.builder()
                 .nome(criarUsuarioRequest.getNome())
                 .senha(criarUsuarioRequest.getSenha())
                 .email(criarUsuarioRequest.getEmail())
                 .criacao(LocalDateTime.now())
-                .build()
-        );
+                .build());
 
         return UsuarioResponse.builder()
                 .email(criarUsuarioRequest.getEmail())
