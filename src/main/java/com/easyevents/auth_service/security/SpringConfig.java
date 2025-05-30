@@ -1,4 +1,4 @@
-package com.easyevents.auth_service;
+package com.easyevents.auth_service.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

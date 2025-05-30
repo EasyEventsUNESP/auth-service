@@ -41,17 +41,17 @@ public class AuthController {
 
     @PostMapping("/criar")
     public ResponseEntity<UsuarioResponse> criar(@RequestBody CriarUsuarioRequest criarUsuarioRequest) {
-        return authService.createUser(criarUsuarioRequest);
+        return authService.criarUsuario(criarUsuarioRequest);
     }
 
     @PutMapping("/atualizar")
     public ResponseEntity<UsuarioResponse> atualizar(@RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) {
-        return authService.updateUsuario(atualizarUsuarioRequest);
+        return authService.atualizarUsuario(atualizarUsuarioRequest);
     }
 
     @DeleteMapping("/deletar/{email}")
     public ResponseEntity<UsuarioResponse> deletar(@PathVariable String email) {
-        return authService.deleteUsuario(email);
+        return authService.deletarUsuario(email);
     }
 
 //    @PostMapping("/login")

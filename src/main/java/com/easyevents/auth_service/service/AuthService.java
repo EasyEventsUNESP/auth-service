@@ -4,8 +4,11 @@ import com.easyevents.auth_service.domain.dto.request.AtualizarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.request.CriarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.request.LoginRequest;
 import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
+import com.easyevents.auth_service.domain.enumerator.Provedor;
 import com.easyevents.auth_service.domain.model.UsuarioModel;
 import com.easyevents.auth_service.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +17,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
@@ -35,7 +41,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
     }
 
-    public ResponseEntity<UsuarioResponse> createUser(CriarUsuarioRequest criarUsuarioRequest){
+    public ResponseEntity<UsuarioResponse> criarUsuario(CriarUsuarioRequest criarUsuarioRequest){
 
         // Verifica se o usuário já existe
         if (usuarioRepository.findByEmail(criarUsuarioRequest.getEmail()).isPresent()) {
@@ -49,6 +55,7 @@ public class AuthService {
                 .senha(criarUsuarioRequest.getSenha())
                 .email(criarUsuarioRequest.getEmail())
                 .criacao(LocalDateTime.now())
+                .provedor(Provedor.LOCAL) // Define o provedor como LOCAL para usuários criados localmente
                 .build());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
@@ -60,7 +67,7 @@ public class AuthService {
         );
     }
 
-    public ResponseEntity<UsuarioResponse> updateUsuario(AtualizarUsuarioRequest atualizarUsuarioRequest) {
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(AtualizarUsuarioRequest atualizarUsuarioRequest) {
 
         UsuarioModel usuarioModel = usuarioRepository.findByEmail(atualizarUsuarioRequest.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
@@ -90,7 +97,7 @@ public class AuthService {
                 );
     }
 
-    public ResponseEntity<UsuarioResponse> deleteUsuario(String email) {
+    public ResponseEntity<UsuarioResponse> deletarUsuario(String email) {
         UsuarioModel usuarioModel = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
@@ -119,5 +126,49 @@ public class AuthService {
                         .responseMessage(validPassword ? "Login realizado com sucesso!" : "Senha incorreta!")
                         .build()
                 );
+    }
+
+    /**
+     * Processa o login de um usuário via OAuth2 (ex: Google).
+     * Procura o usuário pelo email. Se existir, atualiza os dados (ex: nome, data de atualização).
+     * Se não existir, cria um novo usuário com os dados do provedor OAuth2.
+     * Para usuários OAuth2, a senha local não é gerenciada por este fluxo.
+     *
+     * @param email Email do usuário fornecido pelo provedor OAuth2.
+     * @param nome Nome completo do usuário fornecido pelo provedor OAuth2.
+     * @param attributes Atributos adicionais do provedor OAuth2 (para uso futuro, log ou outros campos).
+     * @return O UsuarioModel salvo ou atualizado.
+     * @throws IllegalArgumentException se o email for nulo ou vazio.
+     */
+    public UsuarioModel processarLoginOAuth2(String email, String nome, Map<String, Object> attributes, Provedor provedor) {
+        // Validação básica do email
+        if (email == null || email.trim().isEmpty()) {
+            logger.error("AuthService: Email nulo ou vazio recebido para login OAuth2. Atributos: {}", attributes);
+            throw new IllegalArgumentException("Email não pode ser nulo ou vazio para processar login OAuth2.");
+        }
+        Optional<UsuarioModel> usuarioExistenteOpt = usuarioRepository.findByEmail(email);
+
+        UsuarioModel usuario;
+        if (usuarioExistenteOpt.isPresent()) {
+            usuario = usuarioExistenteOpt.get();
+            logger.info("AuthService: Usuário OAuth2 existente encontrado por email [{}]. Atualizando informações.", email);
+
+            if (nome != null && !nome.trim().isEmpty() && !nome.equals(usuario.getNome())) {
+                usuario.setNome(nome);
+            }
+            usuario.setUpdatedAt(LocalDateTime.now());
+            usuario.setProvedor(provedor); // Atualiza o provedor
+        } else {
+            logger.info("AuthService: Novo usuário OAuth2 com email [{}]. Criando no banco de dados.", email);
+            usuario = UsuarioModel.builder()
+                    .email(email)
+                    .nome(nome)
+                    .criacao(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .provedor(provedor) // Define o provedor
+                    .build();
+        }
+
+        return usuarioRepository.save(usuario);
     }
 }

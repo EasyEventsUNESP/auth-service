@@ -1,6 +1,7 @@
 package com.easyevents.auth_service.domain.model;
 
 import com.easyevents.auth_service.domain.enumerator.Cargo;
+import com.easyevents.auth_service.domain.enumerator.Provedor;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -19,6 +20,7 @@ import java.util.Map;
 public class UsuarioModel extends PessoaModel {
 
     private String senha;
+    private Enum<Provedor> provedor;
     private Boolean admin;
     private LocalDateTime criacao;
     private LocalDateTime update;
