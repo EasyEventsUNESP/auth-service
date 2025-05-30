@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Document(collection = "notificacao")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,7 +15,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notificacao {
+public class NotificacaoModel {
 
     @Id
     private String id;

@@ -2,22 +2,20 @@ package com.easyevents.auth_service.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.springframework.data.annotation.Id;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
-@Document(collection = "administrador")
+@Document(collection = "convidado")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Administrador {
+public class ConvidadoModel extends PessoaModel {
 
-    @Id
-    private String administradorId;
+    private Map<EventoModel, StatusConfirmacao> conviteStatus;
 
 }

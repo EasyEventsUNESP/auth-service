@@ -6,8 +6,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
 
 @Document(collection = "despesa")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,7 +14,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Despesa {
+public class DespesaModel {
 
     @Id
     private String id;

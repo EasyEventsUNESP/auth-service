@@ -2,18 +2,20 @@ package com.easyevents.auth_service.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "convidado")
+@Document(collection = "administrador")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Convidado extends PessoaModel {
+public class AdministradorModel {
 
-    private StatusConfirmacao conviteStatus;
+    @Id
+    private String id;
+    private String email;
 
 }

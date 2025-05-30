@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Document(collection = "evento")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,7 +15,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Evento {
+public class EventoModel {
 
     @Id
     private String id;
@@ -26,7 +25,7 @@ public class Evento {
     private LocalDateTime horaInicio;
     private LocalDateTime horaFim;
     private LocalDateTime updatedAt;
-    private Orcamento orcamento;
+    private OrcamentoModel orcamento;
     private List<String> funcionariosId;
     private List<String> convidadosId;
     private List<String> notificacoesId;
