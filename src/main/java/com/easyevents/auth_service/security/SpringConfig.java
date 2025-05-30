@@ -49,7 +49,7 @@ public class SpringConfig {
 //                        .invalidateHttpSession(true)
 //                        .deleteCookies("JSESSIONID")
 //                        .permitAll()
-//                )
+//                );
                 .authorizeHttpRequests(registry -> registry
                         .anyRequest().permitAll() // 1. Permite TODAS as requisições
                 )
