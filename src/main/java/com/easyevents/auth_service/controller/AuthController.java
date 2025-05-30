@@ -28,6 +28,12 @@ public class AuthController {
         return "ERALDO VS MARIO!";
     }
 
+    @GetMapping("/desconectado")
+    public String logout() {
+
+        return "Logout realizada!";
+    }
+
     @GetMapping("/listar")
     public ResponseEntity<List<UsuarioModel>> listar() {
 
