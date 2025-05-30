@@ -2,10 +2,14 @@ package com.easyevents.auth_service.service;
 
 import com.easyevents.auth_service.domain.dto.request.AtualizarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.request.CriarUsuarioRequest;
+import com.easyevents.auth_service.domain.dto.request.LoginRequest;
 import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
-import com.easyevents.auth_service.domain.model.Usuario;
+import com.easyevents.auth_service.domain.model.UsuarioModel;
 import com.easyevents.auth_service.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,75 +20,104 @@ public class AuthService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    public List<Usuario> listar() {
-        return usuarioRepository.findAll();
+    public AuthService() {
     }
 
-    public Usuario buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    public ResponseEntity<List<UsuarioModel>> listar() {
+        return ResponseEntity.status(HttpStatus.FOUND).body(usuarioRepository.findAll());
     }
 
-    public UsuarioResponse createUser(CriarUsuarioRequest criarUsuarioRequest){
+    public ResponseEntity<UsuarioModel> buscarPorEmail(String email) {
+        return ResponseEntity.status(HttpStatus.FOUND).body(usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
+    }
+
+    public ResponseEntity<UsuarioResponse> createUser(CriarUsuarioRequest criarUsuarioRequest){
 
         // Verifica se o usuário já existe
         if (usuarioRepository.findByEmail(criarUsuarioRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("Usuário já cadastrado");
+            throw new IllegalArgumentException("Usuário já cadastrado");
         }
 
-        usuarioRepository.insert(Usuario.builder()
+        criarUsuarioRequest.setSenha(passwordEncoder.encode(criarUsuarioRequest.getSenha()));
+
+        usuarioRepository.insert(UsuarioModel.builder()
                 .nome(criarUsuarioRequest.getNome())
                 .senha(criarUsuarioRequest.getSenha())
                 .email(criarUsuarioRequest.getEmail())
                 .criacao(LocalDateTime.now())
                 .build());
 
-        return UsuarioResponse.builder()
-                .email(criarUsuarioRequest.getEmail())
-                .nome(criarUsuarioRequest.getNome())
-                .responseMessage("Usuário criado com sucesso!")
-                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                UsuarioResponse.builder()
+                        .email(criarUsuarioRequest.getEmail())
+                        .nome(criarUsuarioRequest.getNome())
+                        .responseMessage("Usuário criado com sucesso!")
+                        .build()
+        );
     }
 
-    public UsuarioResponse updateUsuario(AtualizarUsuarioRequest atualizarUsuarioRequest) {
+    public ResponseEntity<UsuarioResponse> updateUsuario(AtualizarUsuarioRequest atualizarUsuarioRequest) {
 
-        Usuario usuario = usuarioRepository.findByEmail(atualizarUsuarioRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        UsuarioModel usuarioModel = usuarioRepository.findByEmail(atualizarUsuarioRequest.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
         if (atualizarUsuarioRequest.getNovoNome() != null && !atualizarUsuarioRequest.getNovoNome().isEmpty()) {
-            usuario.setNome(atualizarUsuarioRequest.getNovoNome());
+            usuarioModel.setNome(atualizarUsuarioRequest.getNovoNome());
         }
 
         if (atualizarUsuarioRequest.getNovaSenha() != null && !atualizarUsuarioRequest.getNovaSenha().isEmpty()) {
-            usuario.setSenha(atualizarUsuarioRequest.getNovaSenha());
+            usuarioModel.setSenha(atualizarUsuarioRequest.getNovaSenha());
         }
 
         if (atualizarUsuarioRequest.getNovoEmail() != null && !atualizarUsuarioRequest.getNovoEmail().isEmpty()) {
-            usuario.setEmail(atualizarUsuarioRequest.getNovoEmail());
+            usuarioModel.setEmail(atualizarUsuarioRequest.getNovoEmail());
         }
 
-        usuario.setUpdatedAt(LocalDateTime.now());
+        usuarioModel.setUpdatedAt(LocalDateTime.now());
 
-        usuarioRepository.save(usuario);
+        usuarioRepository.save(usuarioModel);
 
-        return UsuarioResponse.builder()
-                .email(usuario.getEmail())
-                .nome(usuario.getNome())
-                .responseMessage("Perfil atualizado com sucesso!")
-                .build();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(UsuarioResponse.builder()
+                        .email(usuarioModel.getEmail())
+                        .nome(usuarioModel.getNome())
+                        .responseMessage("Perfil atualizado com sucesso!")
+                        .build()
+                );
     }
 
-    public UsuarioResponse deleteUsuario(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    public ResponseEntity<UsuarioResponse> deleteUsuario(String email) {
+        UsuarioModel usuarioModel = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        usuarioRepository.delete(usuario);
+        usuarioRepository.delete(usuarioModel);
 
-        return UsuarioResponse.builder()
-                .email(usuario.getEmail())
-                .nome(usuario.getNome())
-                .responseMessage("Usuário deletado com sucesso.")
-                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(
+                UsuarioResponse.builder()
+                        .email(usuarioModel.getEmail())
+                        .nome(usuarioModel.getNome())
+                        .responseMessage("Usuário deletado com sucesso.")
+                        .build()
+        );
+    }
+
+    public ResponseEntity<UsuarioResponse> login(LoginRequest loginRequest){
+        UsuarioModel usuarioModel = usuarioRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        boolean validPassword = passwordEncoder.matches(loginRequest.getSenha(), usuarioModel.getSenha());
+        HttpStatus status = validPassword ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+
+        return ResponseEntity.status(status)
+                .body(UsuarioResponse.builder()
+                        .email(usuarioModel.getEmail())
+                        .nome(usuarioModel.getNome())
+                        .responseMessage(validPassword ? "Login realizado com sucesso!" : "Senha incorreta!")
+                        .build()
+                );
     }
 }

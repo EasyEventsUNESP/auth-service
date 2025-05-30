@@ -15,7 +15,7 @@ import java.util.Map;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario extends Pessoa {
+public class UsuarioModel extends PessoaModel {
 
     private String senha;
     private Boolean admin;
