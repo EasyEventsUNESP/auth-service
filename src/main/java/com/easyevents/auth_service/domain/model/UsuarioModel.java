@@ -20,7 +20,7 @@ import java.util.Map;
 public class UsuarioModel extends PessoaModel {
 
     private String senha;
-    private Enum<Provedor> provedor;
+    private Provedor provedor;
     private Boolean admin;
     private LocalDateTime criacao;
     private LocalDateTime update;

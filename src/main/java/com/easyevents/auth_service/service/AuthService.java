@@ -2,7 +2,6 @@ package com.easyevents.auth_service.service;
 
 import com.easyevents.auth_service.domain.dto.request.AtualizarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.request.CriarUsuarioRequest;
-import com.easyevents.auth_service.domain.dto.request.LoginRequest;
 import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
 import com.easyevents.auth_service.domain.enumerator.Provedor;
 import com.easyevents.auth_service.domain.model.UsuarioModel;
@@ -29,9 +28,6 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public AuthService() {
-    }
-
     public ResponseEntity<List<UsuarioModel>> listar() {
         return ResponseEntity.status(HttpStatus.FOUND).body(usuarioRepository.findAll());
     }
@@ -41,58 +37,76 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
     }
 
-    public ResponseEntity<UsuarioResponse> criarUsuario(CriarUsuarioRequest criarUsuarioRequest){
+    // Dentro de AuthService.java
+    public ResponseEntity<UsuarioResponse> criarUsuario(CriarUsuarioRequest criarUsuarioRequest) {
 
-        // Verifica se o usuário já existe
         if (usuarioRepository.findByEmail(criarUsuarioRequest.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Usuário já cadastrado");
+            throw new IllegalArgumentException("Usuário já cadastrado com o e-mail: " + criarUsuarioRequest.getEmail());
         }
 
-        criarUsuarioRequest.setSenha(passwordEncoder.encode(criarUsuarioRequest.getSenha()));
+        String senhaPlana = criarUsuarioRequest.getSenha();
+        // Codifica a senha normalmente com BCrypt
+        String hashSenhaBCrypt = passwordEncoder.encode(senhaPlana);
 
-        usuarioRepository.insert(UsuarioModel.builder()
+        // Adiciona o prefixo {bcrypt} ao hash antes de salvar
+        String senhaParaArmazenar = "{bcrypt}" + hashSenhaBCrypt;
+
+        UsuarioModel novoUsuario = UsuarioModel.builder()
                 .nome(criarUsuarioRequest.getNome())
-                .senha(criarUsuarioRequest.getSenha())
+                .senha(senhaParaArmazenar) // Salva a senha com o prefixo
                 .email(criarUsuarioRequest.getEmail())
                 .criacao(LocalDateTime.now())
-                .provedor(Provedor.LOCAL) // Define o provedor como LOCAL para usuários criados localmente
-                .build());
+                .updatedAt(LocalDateTime.now())
+                .provedor(Provedor.LOCAL)
+                .build();
+
+        usuarioRepository.insert(novoUsuario);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 UsuarioResponse.builder()
-                        .email(criarUsuarioRequest.getEmail())
-                        .nome(criarUsuarioRequest.getNome())
+                        .email(novoUsuario.getEmail())
+                        .nome(novoUsuario.getNome())
                         .responseMessage("Usuário criado com sucesso!")
                         .build()
         );
     }
 
+    // Dentro de AuthService.java
     public ResponseEntity<UsuarioResponse> atualizarUsuario(AtualizarUsuarioRequest atualizarUsuarioRequest) {
-
         UsuarioModel usuarioModel = usuarioRepository.findByEmail(atualizarUsuarioRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com o e-mail: " + atualizarUsuarioRequest.getEmail()));
 
-        if (atualizarUsuarioRequest.getNovoNome() != null && !atualizarUsuarioRequest.getNovoNome().isEmpty()) {
-            usuarioModel.setNome(atualizarUsuarioRequest.getNovoNome());
+        boolean modificado = false;
+
+        if (atualizarUsuarioRequest.getNovoNome() != null && !atualizarUsuarioRequest.getNovoNome().trim().isEmpty()) {
+            if (!atualizarUsuarioRequest.getNovoNome().equals(usuarioModel.getNome())) {
+                usuarioModel.setNome(atualizarUsuarioRequest.getNovoNome().trim());
+                modificado = true;
+            }
         }
 
+        // Atualiza a senha, SE fornecida, e a codifica com o prefixo
         if (atualizarUsuarioRequest.getNovaSenha() != null && !atualizarUsuarioRequest.getNovaSenha().isEmpty()) {
-            usuarioModel.setSenha(atualizarUsuarioRequest.getNovaSenha());
+            String novaSenhaPlana = atualizarUsuarioRequest.getNovaSenha();
+            String novoHashSenhaBCrypt = passwordEncoder.encode(novaSenhaPlana);
+            // Adiciona o prefixo {bcrypt} ao hash antes de salvar
+            String novaSenhaParaArmazenar = "{bcrypt}" + novoHashSenhaBCrypt;
+            usuarioModel.setSenha(novaSenhaParaArmazenar);
+            modificado = true;
         }
 
-        if (atualizarUsuarioRequest.getNovoEmail() != null && !atualizarUsuarioRequest.getNovoEmail().isEmpty()) {
-            usuarioModel.setEmail(atualizarUsuarioRequest.getNovoEmail());
+        // ... (lógica para atualizar e-mail, se houver) ...
+
+        if (modificado) {
+            usuarioModel.setUpdatedAt(LocalDateTime.now());
+            usuarioRepository.save(usuarioModel);
         }
-
-        usuarioModel.setUpdatedAt(LocalDateTime.now());
-
-        usuarioRepository.save(usuarioModel);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(UsuarioResponse.builder()
                         .email(usuarioModel.getEmail())
                         .nome(usuarioModel.getNome())
-                        .responseMessage("Perfil atualizado com sucesso!")
+                        .responseMessage(modificado ? "Perfil atualizado com sucesso!" : "Nenhuma alteração fornecida ou dados são os mesmos.")
                         .build()
                 );
     }
@@ -112,21 +126,21 @@ public class AuthService {
         );
     }
 
-    public ResponseEntity<UsuarioResponse> login(LoginRequest loginRequest){
-        UsuarioModel usuarioModel = usuarioRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-
-        boolean validPassword = passwordEncoder.matches(loginRequest.getSenha(), usuarioModel.getSenha());
-        HttpStatus status = validPassword ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-
-        return ResponseEntity.status(status)
-                .body(UsuarioResponse.builder()
-                        .email(usuarioModel.getEmail())
-                        .nome(usuarioModel.getNome())
-                        .responseMessage(validPassword ? "Login realizado com sucesso!" : "Senha incorreta!")
-                        .build()
-                );
-    }
+//    public ResponseEntity<UsuarioResponse> login(LoginRequest loginRequest){
+//        UsuarioModel usuarioModel = usuarioRepository.findByEmail(loginRequest.getEmail())
+//                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+//
+//        boolean validPassword = passwordEncoder.matches(loginRequest.getSenha(), usuarioModel.getSenha());
+//        HttpStatus status = validPassword ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+//
+//        return ResponseEntity.status(status)
+//                .body(UsuarioResponse.builder()
+//                        .email(usuarioModel.getEmail())
+//                        .nome(usuarioModel.getNome())
+//                        .responseMessage(validPassword ? "Login realizado com sucesso!" : "Senha incorreta!")
+//                        .build()
+//                );
+//    }
 
     /**
      * Processa o login de um usuário via OAuth2 (ex: Google).
