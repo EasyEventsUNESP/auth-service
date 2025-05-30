@@ -1,4 +1,4 @@
-package com.easyevents.auth_service.domain.Exception;
+package com.easyevents.auth_service.domain.exception;
 
 import com.easyevents.auth_service.domain.dto.response.ErrorResponse;
 import org.slf4j.Logger; // Importar Logger

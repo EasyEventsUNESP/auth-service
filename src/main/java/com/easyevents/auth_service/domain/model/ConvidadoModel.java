@@ -1,5 +1,6 @@
 package com.easyevents.auth_service.domain.model;
 
+import com.easyevents.auth_service.domain.enumerator.StatusConfirmacao;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

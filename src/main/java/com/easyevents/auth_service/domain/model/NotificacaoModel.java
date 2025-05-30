@@ -1,5 +1,7 @@
 package com.easyevents.auth_service.domain.model;
 
+import com.easyevents.auth_service.domain.enumerator.Intensidade;
+import com.easyevents.auth_service.domain.enumerator.TipoNotificacao;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.data.annotation.Id;

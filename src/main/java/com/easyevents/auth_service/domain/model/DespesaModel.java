@@ -1,5 +1,6 @@
 package com.easyevents.auth_service.domain.model;
 
+import com.easyevents.auth_service.domain.enumerator.TipoDespesa;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.data.annotation.Id;

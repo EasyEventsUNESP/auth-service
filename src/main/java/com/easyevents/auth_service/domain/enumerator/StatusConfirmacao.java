@@ -1,4 +1,4 @@
-package com.easyevents.auth_service.domain.model;
+package com.easyevents.auth_service.domain.enumerator;
 
 public enum StatusConfirmacao {
     PENDENTE,
