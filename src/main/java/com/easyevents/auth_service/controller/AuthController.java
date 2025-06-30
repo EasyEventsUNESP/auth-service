@@ -18,15 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private final UsuarioRepository usuarioRepository;
     private final AuthService authService;
-
-    @GetMapping("/")
-    public String endpointTest() {
-
-        return "ERALDO VS MARIO!";
-    }
 
     @GetMapping("/desconectado")
     public String logout() {
@@ -60,10 +52,10 @@ public class AuthController {
         return authService.deletarUsuario(email);
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest loginRequest) {
-//        return authService.login(loginRequest);
-//    }
+    @GetMapping("/senha-temp/{email}")
+    public ResponseEntity<UsuarioResponse> recuperarSenha(@PathVariable String email) {
+        return authService.recuperarSenha(email);
+    }
 
 
 }
