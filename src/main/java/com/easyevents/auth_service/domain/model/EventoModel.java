@@ -22,6 +22,7 @@ public class EventoModel {
     private String nome;
     private String descricao;
     private String local;
+    private String emailOrganizador;
     private LocalDateTime horaInicio;
     private LocalDateTime horaFim;
     private LocalDateTime updatedAt;
