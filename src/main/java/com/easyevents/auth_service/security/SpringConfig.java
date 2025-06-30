@@ -36,17 +36,16 @@ public class SpringConfig {
                             "/auth/login",
                             "/auth/criar",
                             "/auth/public/**",
-                            // Permitir o endpoint de início do OAuth2 (authorization)
-                            "/oauth2/authorization/**", // Já estava assim no frontend, é o que inicia o fluxo
-                            // Permitir o endpoint de retorno (callback) do OAuth2 (code)
-                            // Spring Security por padrão usa /login/oauth2/code/{registrationId}
-                            "/login/oauth2/code/**"    // <--- CORREÇÃO AQUI!
+                            "/auth/senha-temp/**",  // Adicionando o novo endpoint
+                            "/oauth2/authorization/**",
+                            "/login/oauth2/code/**"
                     ).permitAll();
 
                     registry.requestMatchers(HttpMethod.POST, "/auth/login").permitAll();
                     registry.requestMatchers("/auth/**").authenticated();
                     registry.anyRequest().authenticated();
                 })
+
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfoEndpointConfig ->
                                 userInfoEndpointConfig.oidcUserService(customOidcUserServiceInstance)
