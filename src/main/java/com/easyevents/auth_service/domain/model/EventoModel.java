@@ -26,9 +26,6 @@ public class EventoModel {
     private LocalDateTime horaInicio;
     private LocalDateTime horaFim;
     private LocalDateTime updatedAt;
-    private OrcamentoModel orcamento;
-    private List<String> funcionariosId;
-    private List<String> convidadosId;
-    private List<String> notificacoesId;
+    private String orcamentoId;
 
 }

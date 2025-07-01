@@ -25,6 +25,5 @@ public class UsuarioModel extends PessoaModel {
     private LocalDateTime criacao;
     private LocalDateTime update;
     private LocalDateTime updatedAt;
-    private Map<EventoModel, Cargo> eventoCargo;
-
+    private Map<String, Cargo> eventoCargo;
 }
