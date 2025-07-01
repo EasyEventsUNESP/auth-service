@@ -8,7 +8,9 @@ import com.easyevents.auth_service.repository.UsuarioRepository;
 import com.easyevents.auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,10 +62,13 @@ public class AuthController {
         return authService.deletarUsuario(email);
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest loginRequest) {
-//        return authService.login(loginRequest);
-//    }
-
-
+    @GetMapping("/me")
+    public ResponseEntity<Object> getAuthenticatedUser(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            // Retorna o objeto principal, que contém os detalhes do usuário
+            return ResponseEntity.ok(authentication.getPrincipal());
+        }
+        // Se não houver autenticação, o Spring Security já retornará 401 automaticamente
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 }

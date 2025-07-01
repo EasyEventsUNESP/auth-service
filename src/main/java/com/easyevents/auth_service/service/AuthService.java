@@ -2,6 +2,8 @@ package com.easyevents.auth_service.service;
 
 import com.easyevents.auth_service.domain.dto.request.AtualizarUsuarioRequest;
 import com.easyevents.auth_service.domain.dto.request.CriarUsuarioRequest;
+import com.easyevents.auth_service.domain.dto.request.LoginRequest;
+import com.easyevents.auth_service.domain.dto.response.LoginResponse;
 import com.easyevents.auth_service.domain.dto.response.UsuarioResponse;
 import com.easyevents.auth_service.domain.enumerator.Provedor;
 import com.easyevents.auth_service.domain.model.UsuarioModel;
@@ -11,8 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +42,6 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
     }
 
-    // Dentro de AuthService.java
     public ResponseEntity<UsuarioResponse> criarUsuario(CriarUsuarioRequest criarUsuarioRequest) {
 
         if (usuarioRepository.findByEmail(criarUsuarioRequest.getEmail()).isPresent()) {
@@ -55,6 +59,7 @@ public class AuthService {
                 .nome(criarUsuarioRequest.getNome())
                 .senha(senhaParaArmazenar) // Salva a senha com o prefixo
                 .email(criarUsuarioRequest.getEmail())
+                .admin(true)
                 .criacao(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .provedor(Provedor.LOCAL)
@@ -71,10 +76,9 @@ public class AuthService {
         );
     }
 
-    // Dentro de AuthService.java
     public ResponseEntity<UsuarioResponse> atualizarUsuario(AtualizarUsuarioRequest atualizarUsuarioRequest) {
         UsuarioModel usuarioModel = usuarioRepository.findByEmail(atualizarUsuarioRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com o e-mail: " + atualizarUsuarioRequest.getEmail()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado com o e-mail: " + atualizarUsuarioRequest.getEmail()));
 
         boolean modificado = false;
 
@@ -91,21 +95,33 @@ public class AuthService {
             String novoHashSenhaBCrypt = passwordEncoder.encode(novaSenhaPlana);
             // Adiciona o prefixo {bcrypt} ao hash antes de salvar
             String novaSenhaParaArmazenar = "{bcrypt}" + novoHashSenhaBCrypt;
-            usuarioModel.setSenha(novaSenhaParaArmazenar);
-            modificado = true;
+            if (!novaSenhaParaArmazenar.equals(usuarioModel.getSenha())) { // Evita salvar se a senha for a mesma
+                usuarioModel.setSenha(novaSenhaParaArmazenar);
+                modificado = true;
+            }
         }
 
-        // ... (lógica para atualizar e-mail, se houver) ...
+        // Lógica para atualizar a flag 'admin'
+        // Verifica se a requisição forneceu um valor para 'admin'
+        if (atualizarUsuarioRequest.getAdmin() != null) {
+            // Verifica se o valor fornecido é diferente do valor atual para evitar atualização desnecessária
+            if (atualizarUsuarioRequest.getAdmin() != usuarioModel.getAdmin()) {
+                usuarioModel.setAdmin(atualizarUsuarioRequest.getAdmin());
+                modificado = true;
+            }
+        }
 
         if (modificado) {
             usuarioModel.setUpdatedAt(LocalDateTime.now());
             usuarioRepository.save(usuarioModel);
         }
 
+        // Retorna a resposta, incluindo o status de admin
         return ResponseEntity.status(HttpStatus.OK)
                 .body(UsuarioResponse.builder()
                         .email(usuarioModel.getEmail())
                         .nome(usuarioModel.getNome())
+                        .admin(usuarioModel.getAdmin()) // <-- Inclua o status de admin aqui
                         .responseMessage(modificado ? "Perfil atualizado com sucesso!" : "Nenhuma alteração fornecida ou dados são os mesmos.")
                         .build()
                 );
@@ -125,22 +141,6 @@ public class AuthService {
                         .build()
         );
     }
-
-//    public ResponseEntity<UsuarioResponse> login(LoginRequest loginRequest){
-//        UsuarioModel usuarioModel = usuarioRepository.findByEmail(loginRequest.getEmail())
-//                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-//
-//        boolean validPassword = passwordEncoder.matches(loginRequest.getSenha(), usuarioModel.getSenha());
-//        HttpStatus status = validPassword ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-//
-//        return ResponseEntity.status(status)
-//                .body(UsuarioResponse.builder()
-//                        .email(usuarioModel.getEmail())
-//                        .nome(usuarioModel.getNome())
-//                        .responseMessage(validPassword ? "Login realizado com sucesso!" : "Senha incorreta!")
-//                        .build()
-//                );
-//    }
 
     /**
      * Processa o login de um usuário via OAuth2 (ex: Google).

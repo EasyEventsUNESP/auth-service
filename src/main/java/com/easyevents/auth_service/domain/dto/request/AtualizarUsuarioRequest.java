@@ -13,4 +13,5 @@ public class AtualizarUsuarioRequest {
     private String novoNome;
     private String novaSenha;
     private String novoEmail;
+    private Boolean admin;
 }
