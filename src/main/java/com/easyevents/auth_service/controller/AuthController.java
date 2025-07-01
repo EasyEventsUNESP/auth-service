@@ -56,6 +56,4 @@ public class AuthController {
     public ResponseEntity<UsuarioResponse> recuperarSenha(@PathVariable String email) {
         return authService.recuperarSenha(email);
     }
-
-
 }
