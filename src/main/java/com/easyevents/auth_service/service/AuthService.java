@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -184,5 +185,46 @@ public class AuthService {
         }
 
         return usuarioRepository.save(usuario);
+    }
+
+    public ResponseEntity<UsuarioResponse> recuperarSenha(String email) {
+        UsuarioModel usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com o e-mail: " + email));
+
+        // Gera uma senha aleatória de 12 caracteres
+        String novaSenhaTemporaria = gerarSenhaAleatoria();
+
+        // Encripta a senha usando BCrypt e adiciona o prefixo
+        String hashSenhaBCrypt = passwordEncoder.encode(novaSenhaTemporaria);
+        String senhaParaArmazenar = "{bcrypt}" + hashSenhaBCrypt;
+
+        // Atualiza a senha no modelo do usuário
+        usuario.setSenha(senhaParaArmazenar);
+        usuario.setUpdatedAt(LocalDateTime.now());
+
+        // Salva no banco de dados
+        usuarioRepository.save(usuario);
+
+        logger.info("Nova senha temporária gerada para o usuário: {}", email);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(UsuarioResponse.builder()
+                        .email(usuario.getEmail())
+                        .nome(usuario.getNome())
+                        .responseMessage(novaSenhaTemporaria) // Retorna a senha temporária não encriptada
+                        .build());
+    }
+
+    private String gerarSenhaAleatoria() {
+        String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        StringBuilder senha = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+
+        for (int i = 0; i < 12; i++) {
+            int index = random.nextInt(caracteres.length());
+            senha.append(caracteres.charAt(index));
+        }
+
+        return senha.toString();
     }
 }
